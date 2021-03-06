@@ -3,15 +3,7 @@ using HarmonyLib;
 using Kingmaker.Blueprints;
 using Kingmaker.Blueprints.Classes.Spells;
 using Kingmaker.EntitySystem.Stats;
-using Kingmaker.UnitLogic.Abilities.Blueprints;
-using Kingmaker.UnitLogic.Abilities.Components;
-using System;
 using UnityEngine;
-using UnityEngine.UI;
-using Kingmaker.UnitLogic.Mechanics.Components;
-using System.Linq;
-using Kingmaker.Blueprints.Classes;
-using Kingmaker.Designers.Mechanics.Facts;
 using System.Collections.Generic;
 
 namespace MythicSpellbookTweaks {
@@ -49,206 +41,38 @@ namespace MythicSpellbookTweaks {
 
             foreach (var mythic in mythicSpellbooks.Keys) {
                 GUILayout.BeginVertical();
-                switch (mythic) {
-                    case "Aeon":
-                        GUILayout.Label(string.Format("{0}: {1}", mythic, Settings.aeonStat.ToString(), GUILayout.ExpandWidth(false)));
-                        break;
-                    case "Angel":
-                        GUILayout.Label(string.Format("{0}: {1}", mythic, Settings.angelStat.ToString(), GUILayout.ExpandWidth(false)));
-                        break;
-                    case "Azata":
-                        GUILayout.Label(string.Format("{0}: {1}", mythic, Settings.azataStat.ToString(), GUILayout.ExpandWidth(false)));
-                        break;
-                    case "Demon":
-                        GUILayout.Label(string.Format("{0}: {1}", mythic, Settings.demonStat.ToString(), GUILayout.ExpandWidth(false)));
-                        break;
-                    case "Lich":
-                        GUILayout.Label(string.Format("{0}: {1}", mythic, Settings.lichStat.ToString(), GUILayout.ExpandWidth(false)));
-                        break;
-                    case "Trickster":
-                        GUILayout.Label(string.Format("{0}: {1}", mythic, Settings.tricksterStat.ToString(), GUILayout.ExpandWidth(false)));
-                        break;
-                }
+                GUILayout.Label(string.Format("{0}: {1}", mythic, Settings.GetMythicBookStat(mythic).ToString(), GUILayout.ExpandWidth(false)));
+
                 GUILayout.BeginHorizontal();
                 if (GUILayout.Button("STR")) {
-                    var stat = StatType.Strength;
+                    Settings.SetMythicBookStat(mythic,StatType.Strength);
                     var mythicSpellbook = ResourcesLibrary.TryGetBlueprint<BlueprintSpellbook>(mythicSpellbooks[mythic]);
-                    switch (mythic) {
-                        case "Aeon":
-                            Settings.aeonStat = stat;
-                            mythicSpellbook.CastingAttribute = Settings.aeonStat;
-                            break;
-                        case "Angel":
-                            Settings.angelStat = stat;
-                            mythicSpellbook.CastingAttribute = Settings.angelStat;
-                            break;
-                        case "Azata":
-                            Settings.azataStat = stat;
-                            mythicSpellbook.CastingAttribute = Settings.azataStat;
-                            break;
-                        case "Demon":
-                            Settings.demonStat = stat;
-                            mythicSpellbook.CastingAttribute = Settings.demonStat;
-                            break;
-                        case "Lich":
-                            Settings.lichStat = stat;
-                            mythicSpellbook.CastingAttribute = Settings.lichStat;
-                            break;
-                        case "Trickster":
-                            Settings.tricksterStat = stat;
-                            mythicSpellbook.CastingAttribute = Settings.tricksterStat;
-                            break;
-                    }
+                    mythicSpellbook.CastingAttribute = Settings.GetMythicBookStat(mythic);
                 }
                 if (GUILayout.Button("DEX")) {
-                    var stat = StatType.Dexterity;
+                    Settings.SetMythicBookStat(mythic, StatType.Dexterity);
                     var mythicSpellbook = ResourcesLibrary.TryGetBlueprint<BlueprintSpellbook>(mythicSpellbooks[mythic]);
-                    switch (mythic) {
-                        case "Aeon":
-                            Settings.aeonStat = stat;
-                            mythicSpellbook.CastingAttribute = Settings.aeonStat;
-                            break;
-                        case "Angel":
-                            Settings.angelStat = stat;
-                            mythicSpellbook.CastingAttribute = Settings.angelStat;
-                            break;
-                        case "Azata":
-                            Settings.azataStat = stat;
-                            mythicSpellbook.CastingAttribute = Settings.azataStat;
-                            break;
-                        case "Demon":
-                            Settings.demonStat = stat;
-                            mythicSpellbook.CastingAttribute = Settings.demonStat;
-                            break;
-                        case "Lich":
-                            Settings.lichStat = stat;
-                            mythicSpellbook.CastingAttribute = Settings.lichStat;
-                            break;
-                        case "Trickster":
-                            Settings.tricksterStat = stat;
-                            mythicSpellbook.CastingAttribute = Settings.tricksterStat;
-                            break;
-                    }
+                    mythicSpellbook.CastingAttribute = Settings.GetMythicBookStat(mythic);
                 }
                 if (GUILayout.Button("CON")) {
-                    var stat = StatType.Constitution;
+                    Settings.SetMythicBookStat(mythic, StatType.Constitution);
                     var mythicSpellbook = ResourcesLibrary.TryGetBlueprint<BlueprintSpellbook>(mythicSpellbooks[mythic]);
-                    switch (mythic) {
-                        case "Aeon":
-                            Settings.aeonStat = stat;
-                            mythicSpellbook.CastingAttribute = Settings.aeonStat;
-                            break;
-                        case "Angel":
-                            Settings.angelStat = stat;
-                            mythicSpellbook.CastingAttribute = Settings.angelStat;
-                            break;
-                        case "Azata":
-                            Settings.azataStat = stat;
-                            mythicSpellbook.CastingAttribute = Settings.azataStat;
-                            break;
-                        case "Demon":
-                            Settings.demonStat = stat;
-                            mythicSpellbook.CastingAttribute = Settings.demonStat;
-                            break;
-                        case "Lich":
-                            Settings.lichStat = stat;
-                            mythicSpellbook.CastingAttribute = Settings.lichStat;
-                            break;
-                        case "Trickster":
-                            Settings.tricksterStat = stat;
-                            mythicSpellbook.CastingAttribute = Settings.tricksterStat;
-                            break;
-                    }
+                    mythicSpellbook.CastingAttribute = Settings.GetMythicBookStat(mythic);
                 }
                 if (GUILayout.Button("INT")) {
-                    var stat = StatType.Intelligence;
+                    Settings.SetMythicBookStat(mythic, StatType.Intelligence);
                     var mythicSpellbook = ResourcesLibrary.TryGetBlueprint<BlueprintSpellbook>(mythicSpellbooks[mythic]);
-                    switch (mythic) {
-                        case "Aeon":
-                            Settings.aeonStat = stat;
-                            mythicSpellbook.CastingAttribute = Settings.aeonStat;
-                            break;
-                        case "Angel":
-                            Settings.angelStat = stat;
-                            mythicSpellbook.CastingAttribute = Settings.angelStat;
-                            break;
-                        case "Azata":
-                            Settings.azataStat = stat;
-                            mythicSpellbook.CastingAttribute = Settings.azataStat;
-                            break;
-                        case "Demon":
-                            Settings.demonStat = stat;
-                            mythicSpellbook.CastingAttribute = Settings.demonStat;
-                            break;
-                        case "Lich":
-                            Settings.lichStat = stat;
-                            mythicSpellbook.CastingAttribute = Settings.lichStat;
-                            break;
-                        case "Trickster":
-                            Settings.tricksterStat = stat;
-                            mythicSpellbook.CastingAttribute = Settings.tricksterStat;
-                            break;
-                    }
+                    mythicSpellbook.CastingAttribute = Settings.GetMythicBookStat(mythic);
                 }
                 if (GUILayout.Button("WIS")) {
-                    var stat = StatType.Wisdom;
+                    Settings.SetMythicBookStat(mythic, StatType.Wisdom);
                     var mythicSpellbook = ResourcesLibrary.TryGetBlueprint<BlueprintSpellbook>(mythicSpellbooks[mythic]);
-                    switch (mythic) {
-                        case "Aeon":
-                            Settings.aeonStat = stat;
-                            mythicSpellbook.CastingAttribute = Settings.aeonStat;
-                            break;
-                        case "Angel":
-                            Settings.angelStat = stat;
-                            mythicSpellbook.CastingAttribute = Settings.angelStat;
-                            break;
-                        case "Azata":
-                            Settings.azataStat = stat;
-                            mythicSpellbook.CastingAttribute = Settings.azataStat;
-                            break;
-                        case "Demon":
-                            Settings.demonStat = stat;
-                            mythicSpellbook.CastingAttribute = Settings.demonStat;
-                            break;
-                        case "Lich":
-                            Settings.lichStat = stat;
-                            mythicSpellbook.CastingAttribute = Settings.lichStat;
-                            break;
-                        case "Trickster":
-                            Settings.tricksterStat = stat;
-                            mythicSpellbook.CastingAttribute = Settings.tricksterStat;
-                            break;
-                    }
+                    mythicSpellbook.CastingAttribute = Settings.GetMythicBookStat(mythic);
                 }
                 if (GUILayout.Button("CHA")) {
-                    var stat = StatType.Charisma;
+                    Settings.SetMythicBookStat(mythic, StatType.Charisma);
                     var mythicSpellbook = ResourcesLibrary.TryGetBlueprint<BlueprintSpellbook>(mythicSpellbooks[mythic]);
-                    switch (mythic) {
-                        case "Aeon":
-                            Settings.aeonStat = stat;
-                            mythicSpellbook.CastingAttribute = Settings.aeonStat;
-                            break;
-                        case "Angel":
-                            Settings.angelStat = stat;
-                            mythicSpellbook.CastingAttribute = Settings.angelStat;
-                            break;
-                        case "Azata":
-                            Settings.azataStat = stat;
-                            mythicSpellbook.CastingAttribute = Settings.azataStat;
-                            break;
-                        case "Demon":
-                            Settings.demonStat = stat;
-                            mythicSpellbook.CastingAttribute = Settings.demonStat;
-                            break;
-                        case "Lich":
-                            Settings.lichStat = stat;
-                            mythicSpellbook.CastingAttribute = Settings.lichStat;
-                            break;
-                        case "Trickster":
-                            Settings.tricksterStat = stat;
-                            mythicSpellbook.CastingAttribute = Settings.tricksterStat;
-                            break;
-                    }
+                    mythicSpellbook.CastingAttribute = Settings.GetMythicBookStat(mythic);
                 }
                 GUILayout.EndHorizontal();
                 GUILayout.EndVertical();
@@ -287,12 +111,12 @@ namespace MythicSpellbookTweaks {
             }
             static void patchAzataAttribute() {
                 // Update Azata to be Int based
-                ResourcesLibrary.TryGetBlueprint<BlueprintSpellbook>(mythicSpellbooks["Aeon"]).CastingAttribute         = Settings.aeonStat;
-                ResourcesLibrary.TryGetBlueprint<BlueprintSpellbook>(mythicSpellbooks["Angel"]).CastingAttribute        = Settings.angelStat;
-                ResourcesLibrary.TryGetBlueprint<BlueprintSpellbook>(mythicSpellbooks["Azata"]).CastingAttribute        = Settings.azataStat;
-                ResourcesLibrary.TryGetBlueprint<BlueprintSpellbook>(mythicSpellbooks["Demon"]).CastingAttribute        = Settings.demonStat;
-                ResourcesLibrary.TryGetBlueprint<BlueprintSpellbook>(mythicSpellbooks["Lich"]).CastingAttribute         = Settings.lichStat;
-                ResourcesLibrary.TryGetBlueprint<BlueprintSpellbook>(mythicSpellbooks["Trickster"]).CastingAttribute    = Settings.tricksterStat;
+                ResourcesLibrary.TryGetBlueprint<BlueprintSpellbook>(mythicSpellbooks["Aeon"]).CastingAttribute         = Settings.GetMythicBookStat("Aeon");
+                ResourcesLibrary.TryGetBlueprint<BlueprintSpellbook>(mythicSpellbooks["Angel"]).CastingAttribute        = Settings.GetMythicBookStat("Angel");
+                ResourcesLibrary.TryGetBlueprint<BlueprintSpellbook>(mythicSpellbooks["Azata"]).CastingAttribute        = Settings.GetMythicBookStat("Azata");
+                ResourcesLibrary.TryGetBlueprint<BlueprintSpellbook>(mythicSpellbooks["Demon"]).CastingAttribute        = Settings.GetMythicBookStat("Demon");
+                ResourcesLibrary.TryGetBlueprint<BlueprintSpellbook>(mythicSpellbooks["Lich"]).CastingAttribute         = Settings.GetMythicBookStat("Lich");
+                ResourcesLibrary.TryGetBlueprint<BlueprintSpellbook>(mythicSpellbooks["Trickster"]).CastingAttribute    = Settings.GetMythicBookStat("Trickster");
             }
         }
     }
