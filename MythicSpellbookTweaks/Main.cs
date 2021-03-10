@@ -118,7 +118,7 @@ namespace MythicSpellbookTweaks {
                 }
             }
             static void Postfix() {
-                Main.Mod.Logger.Log("Resource Library ENTER");
+                //Main.Mod.Logger.Log("Resource Library ENTER");
                 if (Initialized) return;
                 Initialized = true;
                 patchMythicSpellbookAttributes();
@@ -138,15 +138,15 @@ namespace MythicSpellbookTweaks {
         static class RuleCalculateAbilityParams_OnTrigger {
 
             static void Postfix(RuleCalculateAbilityParams __instance) {
-                Main.Mod.Logger.Log("Mythic Calc ENTER");
+                //Main.Mod.Logger.Log("Mythic Calc ENTER");
                 if (!Settings.mythicCasting) {
                     Main.Mod.Logger.Log("Mtythic Calc EXIT");
                     return;
                 }
-                Main.Mod.Logger.Log("Mythic Calc Trigger");
+                //Main.Mod.Logger.Log("Mythic Calc Trigger");
                 Spellbook spellbook = __instance.Spellbook;
                 bool isMythic = (spellbook != null) ? spellbook.IsMythic : false;
-                Main.Mod.Logger.Log($"Starting DC: {__instance.Result.DC}");
+                //Main.Mod.Logger.Log($"Starting DC: {__instance.Result.DC}");
                 if (isMythic) {
                     Main.Mod.Logger.Log($"isMythic: {isMythic}");
                     var oldMod = __instance.Initiator.Stats.GetStat<ModifiableValueAttributeStat>(__instance.Spellbook.Blueprint.CastingAttribute).Bonus;
@@ -154,7 +154,7 @@ namespace MythicSpellbookTweaks {
                     __instance.Result.DC -= oldMod;
                     __instance.Result.DC += newMod;
                 }
-                Main.Mod.Logger.Log($"Ending DC: {__instance.Result.DC}");
+                //Main.Mod.Logger.Log($"Ending DC: {__instance.Result.DC}");
             }
         }
     }

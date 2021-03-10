@@ -7,5 +7,6 @@
   "GameVersion": "0.5.2i",
   "Requirements": [],
   "AssemblyName": "MythicSpellbookTweaks.dll",
+  "HomePage": "https://www.nexusmods.com/pathfinderwrathoftherighteous/mods/3",
   "EntryMethod": "MythicSpellbookTweaks.Main.Load"
 }
