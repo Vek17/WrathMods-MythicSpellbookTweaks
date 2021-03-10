@@ -9,6 +9,7 @@ namespace MythicSpellbookTweaks {
         public StatType demonStat = StatType.Charisma;
         public StatType lichStat = StatType.Intelligence;
         public StatType tricksterStat = StatType.Charisma;
+        public bool mythicCasting = false;
 
         public StatType GetMythicBookStat(string mythic) {
             mythic = mythic.ToLower().Trim();
@@ -54,6 +55,9 @@ namespace MythicSpellbookTweaks {
                 default:
                     break;
             }
+        }
+        public void toggleMythicCasting() {
+            mythicCasting ^= true;
         }
 
         public override void Save(UnityModManager.ModEntry modEntry) {
