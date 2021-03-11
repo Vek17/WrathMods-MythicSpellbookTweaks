@@ -17,6 +17,12 @@ namespace MythicSpellbookTweaks {
         public static Settings Settings;
         public static bool Enabled;
         public static ModEntry Mod;
+        private static bool debug = false;
+        public static void Log(string msg) {
+            if (debug) {
+                Mod.Logger.Log(msg);
+            }
+        }
         private static Dictionary<string, string> mythicSpellbooks = new Dictionary<string, string>() {
             {"Aeon",        "6091d66a2a9876b4891b989804cfbcb6"},
             {"Angel",       "015658ac45811b843b036e4ccc96c772"},
@@ -46,14 +52,31 @@ namespace MythicSpellbookTweaks {
 
         static void OnGUI(UnityModManager.ModEntry modEntry) {
             GUILayout.BeginVertical();
-            if (GUILayout.Button("Toggle Mythic Casting", GUILayout.ExpandWidth(false))) {
-                Settings.toggleMythicCasting();
+            GUILayout.BeginHorizontal();
+            GUILayout.Label(
+                    string.Format("Casting Type: {0}", Settings.castingType.ToString(),
+                    GUILayout.ExpandWidth(false)));
+            if (GUILayout.Button("Fixed Stat")) {
+                Settings.castingType = Settings.CastingType.FixedStat;
             }
+            if (GUILayout.Button("Highest Mental")) {
+                Settings.castingType = Settings.CastingType.HighestMental;
+            }
+            if (GUILayout.Button("Highest Physical")) {
+                Settings.castingType = Settings.CastingType.HighestPhysical;
+            }
+            if (GUILayout.Button("Highest Stat")) {
+                Settings.castingType = Settings.CastingType.HighestStat;
+            }
+            if (GUILayout.Button("Mythic Rank")) {
+                Settings.castingType = Settings.CastingType.MythicRank;
+            }
+            GUILayout.EndHorizontal();
             foreach (var mythic in mythicSpellbooks.Keys) {
                 GUILayout.Label(
                     string.Format("{0}: {1}",
                         mythic,
-                        Settings.mythicCasting ? "Mythic Rank" : Settings.GetMythicBookStat(mythic).ToString(),
+                        Settings.castingType == Settings.CastingType.FixedStat ? Settings.GetMythicBookStat(mythic).ToString() : Settings.castingType.ToString(),
                     GUILayout.ExpandWidth(false)));
 
                 GUILayout.BeginHorizontal();
@@ -118,7 +141,7 @@ namespace MythicSpellbookTweaks {
                 }
             }
             static void Postfix() {
-                //Main.Mod.Logger.Log("Resource Library ENTER");
+                Log("Resource Library ENTER");
                 if (Initialized) return;
                 Initialized = true;
                 patchMythicSpellbookAttributes();
@@ -138,23 +161,81 @@ namespace MythicSpellbookTweaks {
         static class RuleCalculateAbilityParams_OnTrigger {
 
             static void Postfix(RuleCalculateAbilityParams __instance) {
-                //Main.Mod.Logger.Log("Mythic Calc ENTER");
-                if (!Settings.mythicCasting) {
-                    Main.Mod.Logger.Log("Mtythic Calc EXIT");
-                    return;
-                }
-                //Main.Mod.Logger.Log("Mythic Calc Trigger");
+                Log("Mythic Calc ENTER");
                 Spellbook spellbook = __instance.Spellbook;
                 bool isMythic = (spellbook != null) ? spellbook.IsMythic : false;
-                //Main.Mod.Logger.Log($"Starting DC: {__instance.Result.DC}");
-                if (isMythic) {
-                    Main.Mod.Logger.Log($"isMythic: {isMythic}");
-                    var oldMod = __instance.Initiator.Stats.GetStat<ModifiableValueAttributeStat>(__instance.Spellbook.Blueprint.CastingAttribute).Bonus;
-                    var newMod = __instance.Initiator.Progression.MythicExperience;
-                    __instance.Result.DC -= oldMod;
-                    __instance.Result.DC += newMod;
+                if (!isMythic) {
+                    return;
                 }
-                //Main.Mod.Logger.Log($"Ending DC: {__instance.Result.DC}");
+                switch (Settings.castingType) {
+                    case Settings.CastingType.HighestMental: {
+                            updateDC(__instance, getHighestStat(__instance, new StatType[] {
+                                StatType.Intelligence,
+                                StatType.Wisdom,
+                                StatType.Charisma
+                            }));
+                            return;
+                        }
+                    case Settings.CastingType.HighestPhysical: {
+                            updateDC(__instance, getHighestStat(__instance, new StatType[] {
+                                StatType.Strength,
+                                StatType.Dexterity,
+                                StatType.Constitution,
+                            }));
+                            return;
+                        }
+                    case Settings.CastingType.HighestStat: {
+                            updateDC(__instance, getHighestStat(__instance, new StatType[] {
+                                StatType.Strength,
+                                StatType.Dexterity,
+                                StatType.Constitution,
+                                StatType.Intelligence,
+                                StatType.Wisdom,
+                                StatType.Charisma
+                            }));
+                            return;
+                        }
+                    case Settings.CastingType.MythicRank: {
+                            updateDC(__instance, __instance.Initiator.Progression.MythicExperience);
+                            return;
+                        }
+                    default: {
+                            return;
+                        }
+                }
+            }
+            static private void updateDC(RuleCalculateAbilityParams abilityParams, StatType newStat) {
+                var oldMod = abilityParams.Initiator.Stats.GetStat<ModifiableValueAttributeStat>(abilityParams.Spellbook.Blueprint.CastingAttribute).Bonus;
+                var newMod = abilityParams.Initiator.Stats.GetStat< ModifiableValueAttributeStat>(newStat).Bonus;
+                Log($"Starting DC: {abilityParams.Result.DC}");
+                abilityParams.Result.DC -= oldMod;
+                abilityParams.Result.DC += newMod;
+                Log($"Ending DC: {abilityParams.Result.DC}");
+            }
+            static private void updateDC(RuleCalculateAbilityParams abilityParams, int newMod) {
+                var oldMod = abilityParams.Initiator.Stats.GetStat<ModifiableValueAttributeStat>(abilityParams.Spellbook.Blueprint.CastingAttribute).Bonus;
+                Log($"Starting DC: {abilityParams.Result.DC}");
+                abilityParams.Result.DC -= oldMod;
+                abilityParams.Result.DC += newMod;
+                Log($"Ending DC: {abilityParams.Result.DC}");
+            }
+            static private StatType getHighestStat(RuleCalculateAbilityParams abilityParams, StatType[] stats) {
+                StatType highestStat = StatType.Unknown;
+                int highestValue = -1;
+                foreach (StatType stat in stats) {
+                    var value = abilityParams.Initiator.Stats.GetStat(stat).ModifiedValue;
+                    Log($"{stat} - {value}");
+                    if (value > highestValue) {
+                        Log($"Greater Than: {highestStat} - {highestValue}");
+                        highestStat = stat;
+                        highestValue = value;
+                    }
+                    else {
+                        Log($"Less Than: {highestStat} - {highestValue}");
+                    }
+                }
+                Log($"Highest Stat: {highestStat} - {abilityParams.Initiator.Stats.GetStat(highestStat).ModifiedValue}");
+                return highestStat;
             }
         }
     }

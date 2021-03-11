@@ -1,5 +1,6 @@
 ﻿using UnityModManagerNet;
 using Kingmaker.EntitySystem.Stats;
+using static MythicSpellbookTweaks.Settings.CastingType;
 
 namespace MythicSpellbookTweaks {
     public class Settings : UnityModManager.ModSettings {
@@ -10,6 +11,7 @@ namespace MythicSpellbookTweaks {
         public StatType lichStat = StatType.Intelligence;
         public StatType tricksterStat = StatType.Charisma;
         public bool mythicCasting = false;
+        public CastingType castingType = FixedStat;
 
         public StatType GetMythicBookStat(string mythic) {
             mythic = mythic.ToLower().Trim();
@@ -62,6 +64,13 @@ namespace MythicSpellbookTweaks {
 
         public override void Save(UnityModManager.ModEntry modEntry) {
             Save(this, modEntry);
+        }
+        public enum CastingType {
+              FixedStat,
+              HighestMental,
+              HighestPhysical,
+              HighestStat,
+              MythicRank
         }
     }
 }
