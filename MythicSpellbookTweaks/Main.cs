@@ -1,4 +1,5 @@
-﻿using UnityModManagerNet;
+﻿using static UnityModManagerNet.UnityModManager;
+using UnityModManagerNet;
 using HarmonyLib;
 using Kingmaker.Blueprints;
 using Kingmaker.Blueprints.Classes.Spells;
@@ -6,10 +7,14 @@ using Kingmaker.EntitySystem.Stats;
 using Kingmaker.UnitLogic;
 using UnityEngine;
 using System.Collections.Generic;
-using static UnityModManagerNet.UnityModManager;
 using Kingmaker.RuleSystem.Rules.Abilities;
 using Kingmaker.RuleSystem;
 using System;
+using Kingmaker.UnitLogic.Mechanics.Components;
+using System.Linq;
+using System.Reflection;
+using Kingmaker.Assets.UnitLogic.Mechanics.Properties;
+using Kingmaker.Blueprints.Classes;
 
 namespace MythicSpellbookTweaks {
     static class Main {
@@ -118,21 +123,11 @@ namespace MythicSpellbookTweaks {
             Settings.Save(modEntry);
         }
 
-        /// <summary>
-        /// We cannot modify blueprints until after the game has loaded them, we patch 
-        /// LibraryScriptableObject.LoadDictionary to be able to make our modifications as
-        /// soon as the blueprints have loaded.
-        /// </summary>
         [HarmonyPatch(typeof(ResourcesLibrary), "InitializeLibrary")]
         static class ResourcesLibrary_InitializeLibrary_Patch {
             static bool Initialized;
             static bool Prefix() {
                 if (Initialized) {
-                    // When wrath first loads into the main menu InitializeLibrary is called by Kingmaker.GameStarter.
-                    // When loading into maps, Kingmaker.Runner.Start will call InitializeLibrary which will
-                    // clear the ResourcesLibrary.s_LoadedBlueprints cache which causes loaded blueprints to be garbage collected.
-                    // Return false here to prevent ResourcesLibrary.InitializeLibrary from being called twice 
-                    // to prevent blueprints from being garbage collected.
                     return false;
                 }
                 else {
@@ -158,32 +153,54 @@ namespace MythicSpellbookTweaks {
         [HarmonyPatch(typeof(RuleCalculateAbilityParams), "OnTrigger", new Type[] { typeof(RulebookEventContext) })]
         static class RuleCalculateAbilityParams_OnTrigger {
 
+            static FieldInfo m_CustomProperty = AccessTools.Field(typeof(ContextCalculateAbilityParams), "m_CustomProperty");
+            static FieldInfo m_Class = AccessTools.Field(typeof(CastingAttributeGetter), "m_Class");
+
             static void Postfix(RuleCalculateAbilityParams __instance) {
-                Log("Mythic Calc ENTER");
+                bool isMythic = false;
                 Spellbook spellbook = __instance.Spellbook;
-                bool isMythic = (spellbook != null) ? spellbook.IsMythic : false;
-                if (!isMythic) {
-                    return;
+                bool isSpell = spellbook != null;
+
+                if (!isSpell) { 
+                    Log(__instance.AbilityData.Name);
+                    var AbilityParams = __instance.AbilityData.Blueprint.ComponentsArray.OfType<ContextCalculateAbilityParams>().First();
+                    if (AbilityParams.StatTypeFromCustomProperty) {
+                        BlueprintUnitPropertyReference propertyReference = m_CustomProperty.GetValue(AbilityParams) as BlueprintUnitPropertyReference;
+                        var attributeGetter = propertyReference.Get().ComponentsArray.OfType<CastingAttributeGetter>().First();
+                        BlueprintCharacterClass characterClass = (m_Class.GetValue(attributeGetter) as BlueprintCharacterClassReference).Get();
+                        isMythic = characterClass.IsMythic;
+
+                        Log($"Class: {characterClass.Name}");
+                        Log($"isMythic: {isMythic}");
+                    }
                 }
-                switch (Settings.castingType) {
-                    case Settings.CastingType.HighestMental: {
-                            updateDC(__instance, getHighestStat(__instance, new StatType[] {
+                else {
+                    Log($"{__instance.AbilityData.Name}");
+                    isMythic = (spellbook != null) ? spellbook.IsMythic : false;
+                    Log($"isMythic: {isMythic}");
+                }
+
+                if (isMythic) {
+                    Log($"Using: {Settings.castingType}");
+                    switch (Settings.castingType) {
+                        case Settings.CastingType.HighestMental: {
+                                updateDC(__instance, getHighestStat(__instance, new StatType[] {
                                 StatType.Intelligence,
                                 StatType.Wisdom,
                                 StatType.Charisma
                             }));
-                            return;
-                        }
-                    case Settings.CastingType.HighestPhysical: {
-                            updateDC(__instance, getHighestStat(__instance, new StatType[] {
+                                return;
+                            }
+                        case Settings.CastingType.HighestPhysical: {
+                                updateDC(__instance, getHighestStat(__instance, new StatType[] {
                                 StatType.Strength,
                                 StatType.Dexterity,
                                 StatType.Constitution,
                             }));
-                            return;
-                        }
-                    case Settings.CastingType.HighestStat: {
-                            updateDC(__instance, getHighestStat(__instance, new StatType[] {
+                                return;
+                            }
+                        case Settings.CastingType.HighestStat: {
+                                updateDC(__instance, getHighestStat(__instance, new StatType[] {
                                 StatType.Strength,
                                 StatType.Dexterity,
                                 StatType.Constitution,
@@ -191,15 +208,16 @@ namespace MythicSpellbookTweaks {
                                 StatType.Wisdom,
                                 StatType.Charisma
                             }));
-                            return;
-                        }
-                    case Settings.CastingType.MythicRank: {
-                            updateDC(__instance, __instance.Initiator.Progression.MythicExperience);
-                            return;
-                        }
-                    default: {
-                            return;
-                        }
+                                return;
+                            }
+                        case Settings.CastingType.MythicRank: {
+                                updateDC(__instance, __instance.Initiator.Progression.MythicExperience);
+                                return;
+                            }
+                        default: {
+                                return;
+                            }
+                    }
                 }
             }
             static private void updateDC(RuleCalculateAbilityParams abilityParams, StatType newStat) {
@@ -218,14 +236,9 @@ namespace MythicSpellbookTweaks {
                 int highestValue = -1;
                 foreach (StatType stat in stats) {
                     var value = abilityParams.Initiator.Stats.GetStat(stat).ModifiedValue;
-                    Log($"{stat} - {value}");
                     if (value > highestValue) {
-                        Log($"Greater Than: {highestStat} - {highestValue}");
                         highestStat = stat;
                         highestValue = value;
-                    }
-                    else {
-                        Log($"Less Than: {highestStat} - {highestValue}");
                     }
                 }
                 Log($"Highest Stat: {highestStat} - {abilityParams.Initiator.Stats.GetStat(highestStat).ModifiedValue}");
