@@ -17,9 +17,8 @@ namespace MythicSpellbookTweaks {
         public static Settings Settings;
         public static bool Enabled;
         public static ModEntry Mod;
-        private static bool debug = false;
         public static void Log(string msg) {
-            if (debug) {
+            if (Settings.Debug) {
                 Mod.Logger.Log(msg);
             }
         }
@@ -147,7 +146,6 @@ namespace MythicSpellbookTweaks {
                 patchMythicSpellbookAttributes();
             }
             static void patchMythicSpellbookAttributes() {
-                // Update Azata to be Int based
                 ResourcesLibrary.TryGetBlueprint<BlueprintSpellbook>(mythicSpellbooks["Aeon"]).CastingAttribute = Settings.GetMythicBookStat("Aeon");
                 ResourcesLibrary.TryGetBlueprint<BlueprintSpellbook>(mythicSpellbooks["Angel"]).CastingAttribute = Settings.GetMythicBookStat("Angel");
                 ResourcesLibrary.TryGetBlueprint<BlueprintSpellbook>(mythicSpellbooks["Azata"]).CastingAttribute = Settings.GetMythicBookStat("Azata");
@@ -205,12 +203,8 @@ namespace MythicSpellbookTweaks {
                 }
             }
             static private void updateDC(RuleCalculateAbilityParams abilityParams, StatType newStat) {
-                var oldMod = abilityParams.Initiator.Stats.GetStat<ModifiableValueAttributeStat>(abilityParams.Spellbook.Blueprint.CastingAttribute).Bonus;
                 var newMod = abilityParams.Initiator.Stats.GetStat< ModifiableValueAttributeStat>(newStat).Bonus;
-                Log($"Starting DC: {abilityParams.Result.DC}");
-                abilityParams.Result.DC -= oldMod;
-                abilityParams.Result.DC += newMod;
-                Log($"Ending DC: {abilityParams.Result.DC}");
+                updateDC(abilityParams, newMod);
             }
             static private void updateDC(RuleCalculateAbilityParams abilityParams, int newMod) {
                 var oldMod = abilityParams.Initiator.Stats.GetStat<ModifiableValueAttributeStat>(abilityParams.Spellbook.Blueprint.CastingAttribute).Bonus;

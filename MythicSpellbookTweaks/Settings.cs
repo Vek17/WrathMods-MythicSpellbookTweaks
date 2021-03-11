@@ -4,13 +4,13 @@ using static MythicSpellbookTweaks.Settings.CastingType;
 
 namespace MythicSpellbookTweaks {
     public class Settings : UnityModManager.ModSettings {
+        public bool Debug = false;
         public StatType aeonStat = StatType.Charisma;
         public StatType angelStat = StatType.Wisdom;
         public StatType azataStat = StatType.Charisma;
         public StatType demonStat = StatType.Charisma;
         public StatType lichStat = StatType.Intelligence;
         public StatType tricksterStat = StatType.Charisma;
-        public bool mythicCasting = false;
         public CastingType castingType = FixedStat;
 
         public StatType GetMythicBookStat(string mythic) {
@@ -58,10 +58,6 @@ namespace MythicSpellbookTweaks {
                     break;
             }
         }
-        public void toggleMythicCasting() {
-            mythicCasting ^= true;
-        }
-
         public override void Save(UnityModManager.ModEntry modEntry) {
             Save(this, modEntry);
         }
