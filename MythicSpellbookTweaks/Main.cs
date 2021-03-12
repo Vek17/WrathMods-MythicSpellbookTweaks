@@ -12,7 +12,6 @@ using Kingmaker.RuleSystem;
 using System;
 using Kingmaker.UnitLogic.Mechanics.Components;
 using System.Linq;
-using System.Reflection;
 using Kingmaker.Assets.UnitLogic.Mechanics.Properties;
 using Kingmaker.Blueprints.Classes;
 
@@ -135,9 +134,9 @@ namespace MythicSpellbookTweaks {
                 }
             }
             static void Postfix() {
-                Log("Resource Library ENTER");
                 if (Initialized) return;
                 Initialized = true;
+                Log("Patching MythicSpellBookTweaks");
                 patchMythicSpellbookAttributes();
             }
             static void patchMythicSpellbookAttributes() {
@@ -152,27 +151,25 @@ namespace MythicSpellbookTweaks {
 
         [HarmonyPatch(typeof(RuleCalculateAbilityParams), "OnTrigger", new Type[] { typeof(RulebookEventContext) })]
         static class RuleCalculateAbilityParams_OnTrigger {
-
-            static FieldInfo m_CustomProperty = AccessTools.Field(typeof(ContextCalculateAbilityParams), "m_CustomProperty");
-            static FieldInfo m_Class = AccessTools.Field(typeof(CastingAttributeGetter), "m_Class");
-
+            
             static void Postfix(RuleCalculateAbilityParams __instance) {
                 bool isMythic = false;
                 Spellbook spellbook = __instance.Spellbook;
                 bool isSpell = spellbook != null;
-
-                if (!isSpell) { 
+                
+                if (!isSpell) {
+                    
                     Log(__instance.AbilityData.Name);
                     var AbilityParams = __instance.AbilityData.Blueprint.ComponentsArray.OfType<ContextCalculateAbilityParams>().First();
                     if (AbilityParams.StatTypeFromCustomProperty) {
-                        BlueprintUnitPropertyReference propertyReference = m_CustomProperty.GetValue(AbilityParams) as BlueprintUnitPropertyReference;
-                        var attributeGetter = propertyReference.Get().ComponentsArray.OfType<CastingAttributeGetter>().First();
-                        BlueprintCharacterClass characterClass = (m_Class.GetValue(attributeGetter) as BlueprintCharacterClassReference).Get();
-                        isMythic = characterClass.IsMythic;
+                        BlueprintCharacterClass characterClass = AbilityParams.m_CustomProperty.Get()
+                                .ComponentsArray.OfType<CastingAttributeGetter>().First()
+                                .m_Class;
 
                         Log($"Class: {characterClass.Name}");
                         Log($"isMythic: {isMythic}");
                     }
+                    
                 }
                 else {
                     Log($"{__instance.AbilityData.Name}");
