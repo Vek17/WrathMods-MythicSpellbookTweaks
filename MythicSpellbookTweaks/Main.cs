@@ -155,21 +155,18 @@ namespace MythicSpellbookTweaks {
             static void Postfix(RuleCalculateAbilityParams __instance) {
                 bool isMythic = false;
                 Spellbook spellbook = __instance.Spellbook;
-                bool isSpell = spellbook != null;
                 
-                if (!isSpell) {
-                    
+                if (spellbook == null) {
                     Log(__instance.AbilityData.Name);
                     var AbilityParams = __instance.AbilityData.Blueprint.ComponentsArray.OfType<ContextCalculateAbilityParams>().First();
                     if (AbilityParams.StatTypeFromCustomProperty) {
                         BlueprintCharacterClass characterClass = AbilityParams.m_CustomProperty.Get()
                                 .ComponentsArray.OfType<CastingAttributeGetter>().First()
                                 .m_Class;
-
+                        isMythic = characterClass.IsMythic;
                         Log($"Class: {characterClass.Name}");
                         Log($"isMythic: {isMythic}");
                     }
-                    
                 }
                 else {
                     Log($"{__instance.AbilityData.Name}");
