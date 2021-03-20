@@ -14,6 +14,7 @@ using Kingmaker.UnitLogic.Mechanics.Components;
 using System.Linq;
 using Kingmaker.Assets.UnitLogic.Mechanics.Properties;
 using Kingmaker.Blueprints.Classes;
+using Kingmaker.UnitLogic.Buffs.Blueprints;
 
 namespace MythicSpellbookTweaks {
     static class Main {
@@ -21,11 +22,6 @@ namespace MythicSpellbookTweaks {
         public static Settings Settings;
         public static bool Enabled;
         public static ModEntry Mod;
-        public static void Log(string msg) {
-            if (Settings.Debug) {
-                Mod.Logger.Log(msg);
-            }
-        }
         private static Dictionary<string, string> mythicSpellbooks = new Dictionary<string, string>() {
             {"Aeon",        "6091d66a2a9876b4891b989804cfbcb6"},
             {"Angel",       "015658ac45811b843b036e4ccc96c772"},
@@ -35,6 +31,10 @@ namespace MythicSpellbookTweaks {
             {"Trickster",   "2ff51e0531ed8e545ab4cb35c32d40f4"},
 
         };
+        [System.Diagnostics.Conditional("DEBUG")]
+        public static void Log(string msg) {
+            Mod.Logger.Log(msg);
+        }
 
         static bool Load(UnityModManager.ModEntry modEntry) {
             var harmony = new Harmony(modEntry.Info.Id);
@@ -147,54 +147,53 @@ namespace MythicSpellbookTweaks {
                 ResourcesLibrary.TryGetBlueprint<BlueprintSpellbook>(mythicSpellbooks["Lich"]).CastingAttribute = Settings.GetMythicBookStat("Lich");
                 ResourcesLibrary.TryGetBlueprint<BlueprintSpellbook>(mythicSpellbooks["Trickster"]).CastingAttribute = Settings.GetMythicBookStat("Trickster");
             }
-        }
 
-        [HarmonyPatch(typeof(RuleCalculateAbilityParams), "OnTrigger", new Type[] { typeof(RulebookEventContext) })]
-        static class RuleCalculateAbilityParams_OnTrigger {
-            
-            static void Postfix(RuleCalculateAbilityParams __instance) {
-                bool isMythic = false;
-                Spellbook spellbook = __instance.Spellbook;
-                
-                if (spellbook == null) {
-                    Log(__instance.AbilityData.Name);
-                    var AbilityParams = __instance.AbilityData.Blueprint.ComponentsArray.OfType<ContextCalculateAbilityParams>().First();
-                    if (AbilityParams.StatTypeFromCustomProperty) {
-                        BlueprintCharacterClass characterClass = AbilityParams.m_CustomProperty.Get()
-                                .ComponentsArray.OfType<CastingAttributeGetter>().First()
-                                .m_Class;
-                        isMythic = characterClass.IsMythic;
-                        Log($"Class: {characterClass.Name}");
+            [HarmonyPatch(typeof(RuleCalculateAbilityParams), "OnTrigger", new Type[] { typeof(RulebookEventContext) })]
+            static class RuleCalculateAbilityParams_OnTrigger {
+
+                static void Postfix(RuleCalculateAbilityParams __instance) {
+                    bool isMythic = false;
+                    Spellbook spellbook = __instance.Spellbook;
+
+                    if (spellbook == null) {
+                        Log(__instance.AbilityData.Name);
+                        var AbilityParams = __instance.AbilityData.Blueprint.ComponentsArray.OfType<ContextCalculateAbilityParams>().First();
+                        if (AbilityParams.StatTypeFromCustomProperty) {
+                            BlueprintCharacterClass characterClass = AbilityParams.m_CustomProperty.Get()
+                                    .ComponentsArray.OfType<CastingAttributeGetter>().First()
+                                    .m_Class;
+                            isMythic = characterClass.IsMythic;
+                            Log($"Class: {characterClass.Name}");
+                            Log($"isMythic: {isMythic}");
+                        }
+                    }
+                    else {
+                        Log($"{__instance.AbilityData.Name}");
+                        isMythic = (spellbook != null) ? spellbook.IsMythic : false;
                         Log($"isMythic: {isMythic}");
                     }
-                }
-                else {
-                    Log($"{__instance.AbilityData.Name}");
-                    isMythic = (spellbook != null) ? spellbook.IsMythic : false;
-                    Log($"isMythic: {isMythic}");
-                }
 
-                if (isMythic) {
-                    Log($"Using: {Settings.castingType}");
-                    switch (Settings.castingType) {
-                        case Settings.CastingType.HighestMental: {
-                                updateDC(__instance, getHighestStat(__instance, new StatType[] {
+                    if (isMythic) {
+                        Log($"Using: {Settings.castingType}");
+                        switch (Settings.castingType) {
+                            case Settings.CastingType.HighestMental: {
+                                    updateDC(__instance, getHighestStat(__instance, new StatType[] {
                                 StatType.Intelligence,
                                 StatType.Wisdom,
                                 StatType.Charisma
                             }));
-                                return;
-                            }
-                        case Settings.CastingType.HighestPhysical: {
-                                updateDC(__instance, getHighestStat(__instance, new StatType[] {
+                                    return;
+                                }
+                            case Settings.CastingType.HighestPhysical: {
+                                    updateDC(__instance, getHighestStat(__instance, new StatType[] {
                                 StatType.Strength,
                                 StatType.Dexterity,
                                 StatType.Constitution,
                             }));
-                                return;
-                            }
-                        case Settings.CastingType.HighestStat: {
-                                updateDC(__instance, getHighestStat(__instance, new StatType[] {
+                                    return;
+                                }
+                            case Settings.CastingType.HighestStat: {
+                                    updateDC(__instance, getHighestStat(__instance, new StatType[] {
                                 StatType.Strength,
                                 StatType.Dexterity,
                                 StatType.Constitution,
@@ -202,41 +201,42 @@ namespace MythicSpellbookTweaks {
                                 StatType.Wisdom,
                                 StatType.Charisma
                             }));
-                                return;
-                            }
-                        case Settings.CastingType.MythicRank: {
-                                updateDC(__instance, __instance.Initiator.Progression.MythicExperience);
-                                return;
-                            }
-                        default: {
-                                return;
-                            }
+                                    return;
+                                }
+                            case Settings.CastingType.MythicRank: {
+                                    updateDC(__instance, __instance.Initiator.Progression.MythicExperience);
+                                    return;
+                                }
+                            default: {
+                                    return;
+                                }
+                        }
                     }
                 }
-            }
-            static private void updateDC(RuleCalculateAbilityParams abilityParams, StatType newStat) {
-                var newMod = abilityParams.Initiator.Stats.GetStat< ModifiableValueAttributeStat>(newStat).Bonus;
-                updateDC(abilityParams, newMod);
-            }
-            static private void updateDC(RuleCalculateAbilityParams abilityParams, int newMod) {
-                var oldMod = abilityParams.Initiator.Stats.GetStat<ModifiableValueAttributeStat>(abilityParams.Spellbook.Blueprint.CastingAttribute).Bonus;
-                Log($"Starting DC: {abilityParams.Result.DC}");
-                abilityParams.Result.DC -= oldMod;
-                abilityParams.Result.DC += newMod;
-                Log($"Ending DC: {abilityParams.Result.DC}");
-            }
-            static private StatType getHighestStat(RuleCalculateAbilityParams abilityParams, StatType[] stats) {
-                StatType highestStat = StatType.Unknown;
-                int highestValue = -1;
-                foreach (StatType stat in stats) {
-                    var value = abilityParams.Initiator.Stats.GetStat(stat).ModifiedValue;
-                    if (value > highestValue) {
-                        highestStat = stat;
-                        highestValue = value;
-                    }
+                static private void updateDC(RuleCalculateAbilityParams abilityParams, StatType newStat) {
+                    var newMod = abilityParams.Initiator.Stats.GetStat<ModifiableValueAttributeStat>(newStat).Bonus;
+                    updateDC(abilityParams, newMod);
                 }
-                Log($"Highest Stat: {highestStat} - {abilityParams.Initiator.Stats.GetStat(highestStat).ModifiedValue}");
-                return highestStat;
+                static private void updateDC(RuleCalculateAbilityParams abilityParams, int newMod) {
+                    var oldMod = abilityParams.Initiator.Stats.GetStat<ModifiableValueAttributeStat>(abilityParams.Spellbook.Blueprint.CastingAttribute).Bonus;
+                    Log($"Starting DC: {abilityParams.Result.DC}");
+                    abilityParams.Result.DC -= oldMod;
+                    abilityParams.Result.DC += newMod;
+                    Log($"Ending DC: {abilityParams.Result.DC}");
+                }
+                static private StatType getHighestStat(RuleCalculateAbilityParams abilityParams, StatType[] stats) {
+                    StatType highestStat = StatType.Unknown;
+                    int highestValue = -1;
+                    foreach (StatType stat in stats) {
+                        var value = abilityParams.Initiator.Stats.GetStat(stat).ModifiedValue;
+                        if (value > highestValue) {
+                            highestStat = stat;
+                            highestValue = value;
+                        }
+                    }
+                    Log($"Highest Stat: {highestStat} - {abilityParams.Initiator.Stats.GetStat(highestStat).ModifiedValue}");
+                    return highestStat;
+                }
             }
         }
     }

@@ -4,7 +4,6 @@ using static MythicSpellbookTweaks.Settings.CastingType;
 
 namespace MythicSpellbookTweaks {
     public class Settings : UnityModManager.ModSettings {
-        public bool Debug = false;
         public StatType aeonStat = StatType.Charisma;
         public StatType angelStat = StatType.Wisdom;
         public StatType azataStat = StatType.Charisma;
