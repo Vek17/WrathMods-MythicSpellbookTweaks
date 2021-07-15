@@ -260,7 +260,6 @@ namespace MythicSpellbookTweaks {
                 if (__instance.IsStandaloneMythic) {
                     if (Settings.enableAbundantCasting) {
                         UnitPartExtraSpellsPerDay unitPartExtraSpellsPerDay = __instance.Owner.Get<UnitPartExtraSpellsPerDay>();
-                        Log($"Length: {unitPartExtraSpellsPerDay?.BonusSpells.Length ?? 0} Index: {spellLevel} Book: {__instance.Blueprint.name}");
                         if (unitPartExtraSpellsPerDay != null && unitPartExtraSpellsPerDay.BonusSpells.Length > spellLevel) {
                             __result += unitPartExtraSpellsPerDay.BonusSpells[spellLevel];
                         }
