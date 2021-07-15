@@ -1,9 +1,9 @@
-﻿using UnityModManagerNet;
-using Kingmaker.EntitySystem.Stats;
+﻿using Kingmaker.EntitySystem.Stats;
+using UnityModManagerNet;
 using static MythicSpellbookTweaks.Settings.CastingType;
 
 namespace MythicSpellbookTweaks {
-    public class Settings : UnityModManager.ModSettings {
+    public class Settings: UnityModManager.ModSettings {
         public StatType aeonStat = StatType.Charisma;
         public StatType angelStat = StatType.Wisdom;
         public StatType azataStat = StatType.Charisma;
@@ -11,6 +11,8 @@ namespace MythicSpellbookTweaks {
         public StatType lichStat = StatType.Intelligence;
         public StatType tricksterStat = StatType.Charisma;
         public CastingType castingType = FixedStat;
+        public bool disableArcaneFailure = true;
+        public bool enableAbundantCasting = true;
 
         public StatType GetMythicBookStat(string mythic) {
             mythic = mythic.ToLower().Trim();
@@ -61,11 +63,11 @@ namespace MythicSpellbookTweaks {
             Save(this, modEntry);
         }
         public enum CastingType {
-              FixedStat,
-              HighestMental,
-              HighestPhysical,
-              HighestStat,
-              MythicRank
+            FixedStat,
+            HighestMental,
+            HighestPhysical,
+            HighestStat,
+            MythicRank
         }
     }
 }
