@@ -1,12 +1,12 @@
 ﻿{
-  "Id": "MythicSpellbookTweaks",
-  "DisplayName": "MythicSpellbookTweaks",
-  "Author": "Vek17",
-  "Version": "2.0.0",
-  "ManagerVersion": "0.23.0",
-  "GameVersion": "0.8.0",
-  "Requirements": [],
-  "AssemblyName": "MythicSpellbookTweaks.dll",
-  "HomePage": "https://www.nexusmods.com/pathfinderwrathoftherighteous/mods/3",
-  "EntryMethod": "MythicSpellbookTweaks.Main.Load"
+    "Id": "MythicSpellbookTweaks",
+    "DisplayName": "MythicSpellbookTweaks",
+    "Author": "Vek17",
+    "Version": "3.0.0",
+    "ManagerVersion": "0.23.0",
+    "GameVersion": "1.0.0",
+    "Requirements": [],
+    "AssemblyName": "MythicSpellbookTweaks.dll",
+    "HomePage": "https://github.com/Vek17/WrathMods-MythicSpellbookTweaks",
+    "EntryMethod": "MythicSpellbookTweaks.Main.Load"
 }

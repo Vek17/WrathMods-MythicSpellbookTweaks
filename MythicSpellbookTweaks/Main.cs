@@ -64,6 +64,12 @@ namespace MythicSpellbookTweaks {
             GUILayout.Label(Settings.disableArcaneFailure ? "Disabled" : "Enabled", GUILayout.ExpandWidth(false));
             GUILayout.EndHorizontal();
             GUILayout.BeginHorizontal();
+            if (GUILayout.Button("Casting DC Changes", GUILayout.ExpandWidth(false))) {
+                Settings.disableCastingChanges = !Settings.disableCastingChanges;
+            }
+            GUILayout.Label(Settings.disableCastingChanges ? "Disabled" : "Enabled", GUILayout.ExpandWidth(false));
+            GUILayout.EndHorizontal();
+            GUILayout.BeginHorizontal();
             GUILayout.Label(
                     string.Format("Casting Type: {0}", Settings.castingType.ToString()), GUILayout.ExpandWidth(false));
             if (GUILayout.Button("Fixed Stat", GUILayout.ExpandWidth(false))) {
@@ -158,6 +164,7 @@ namespace MythicSpellbookTweaks {
             static class RuleCalculateAbilityParams_OnTrigger {
 
                 static void Postfix(RuleCalculateAbilityParams __instance) {
+                    if (Settings.disableCastingChanges) { return; }
                     bool isMythic = false;
                     Spellbook spellbook = __instance.Spellbook;
 #if false

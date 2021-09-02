@@ -3,7 +3,7 @@ using UnityModManagerNet;
 using static MythicSpellbookTweaks.Settings.CastingType;
 
 namespace MythicSpellbookTweaks {
-    public class Settings: UnityModManager.ModSettings {
+    public class Settings : UnityModManager.ModSettings {
         public StatType aeonStat = StatType.Charisma;
         public StatType angelStat = StatType.Wisdom;
         public StatType azataStat = StatType.Charisma;
@@ -13,6 +13,7 @@ namespace MythicSpellbookTweaks {
         public CastingType castingType = FixedStat;
         public bool disableArcaneFailure = true;
         public bool enableAbundantCasting = true;
+        public bool disableCastingChanges = false;
 
         public StatType GetMythicBookStat(string mythic) {
             mythic = mythic.ToLower().Trim();
