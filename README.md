@@ -1,4 +1,4 @@
-Mythic Classes currently have locked casting/scaling attributes for abilities which can limit which class/mythic combinations are possible. This mod adds the ability to change that scaling in a variety of ways.
+Mythic Class spell books currently scale on mythic rank. This mod adds the ability to change that scaling in a variety of ways.
 
 **How to install**
 
