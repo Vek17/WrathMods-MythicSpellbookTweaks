@@ -4,32 +4,31 @@ using static MythicSpellbookTweaks.Settings.CastingType;
 
 namespace MythicSpellbookTweaks {
     public class Settings : UnityModManager.ModSettings {
-        public StatType aeonStat = StatType.Charisma;
-        public StatType angelStat = StatType.Wisdom;
-        public StatType azataStat = StatType.Charisma;
-        public StatType demonStat = StatType.Charisma;
-        public StatType lichStat = StatType.Intelligence;
-        public StatType tricksterStat = StatType.Charisma;
-        public CastingType castingType = FixedStat;
+        public StatType AeonStat = StatType.Charisma;
+        public StatType AngelStat = StatType.Wisdom;
+        public StatType AzataStat = StatType.Charisma;
+        public StatType DemonStat = StatType.Charisma;
+        public StatType LichStat = StatType.Intelligence;
+        public StatType TricksterStat = StatType.Charisma;
+        public CastingType castingType = MythicRank;
         public bool disableArcaneFailure = true;
         public bool enableAbundantCasting = true;
-        public bool disableCastingChanges = false;
 
         public StatType GetMythicBookStat(string mythic) {
             mythic = mythic.ToLower().Trim();
             switch (mythic) {
                 case "aeon":
-                    return aeonStat;
+                    return AeonStat;
                 case "angel":
-                    return angelStat;
+                    return AngelStat;
                 case "azata":
-                    return azataStat;
+                    return AzataStat;
                 case "demon":
-                    return demonStat;
+                    return DemonStat;
                 case "lich":
-                    return lichStat;
+                    return LichStat;
                 case "trickster":
-                    return tricksterStat;
+                    return TricksterStat;
                 default:
                     return StatType.Unknown;
             }
@@ -39,22 +38,22 @@ namespace MythicSpellbookTweaks {
             mythic = mythic.ToLower().Trim();
             switch (mythic) {
                 case "aeon":
-                    aeonStat = stat;
+                    AeonStat = stat;
                     break;
                 case "angel":
-                    angelStat = stat;
+                    AngelStat = stat;
                     break;
                 case "azata":
-                    azataStat = stat;
+                    AzataStat = stat;
                     break;
                 case "demon":
-                    demonStat = stat;
+                    DemonStat = stat;
                     break;
                 case "lich":
-                    lichStat = stat;
+                    LichStat = stat;
                     break;
                 case "trickster":
-                    tricksterStat = stat;
+                    TricksterStat = stat;
                     break;
                 default:
                     break;

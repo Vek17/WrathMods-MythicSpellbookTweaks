@@ -20,14 +20,19 @@ namespace MythicSpellbookTweaks {
         public static Settings Settings;
         public static bool Enabled;
         public static ModEntry Mod;
-        private static Dictionary<string, string> mythicSpellbooks = new Dictionary<string, string>() {
-            {"Aeon",        "6091d66a2a9876b4891b989804cfbcb6"},
-            {"Angel",       "015658ac45811b843b036e4ccc96c772"},
-            {"Azata",       "b21b9f5e2831c2549a782d8128fb905b"},
-            {"Demon",       "e3daa889c72982e45a026f62cc84937d"},
-            {"Lich",        "08a80074263809c4b9616aac05af90ae"},
-            {"Trickster",   "2ff51e0531ed8e545ab4cb35c32d40f4"},
-
+        public static readonly BlueprintGuid AeonSpellbook = BlueprintGuid.Parse("6091d66a2a9876b4891b989804cfbcb6");
+        public static readonly BlueprintGuid AngelSpellbook = BlueprintGuid.Parse("015658ac45811b843b036e4ccc96c772");
+        public static readonly BlueprintGuid AzataSpellbook = BlueprintGuid.Parse("b21b9f5e2831c2549a782d8128fb905b");
+        public static readonly BlueprintGuid DemonSpellbook = BlueprintGuid.Parse("e3daa889c72982e45a026f62cc84937d");
+        public static readonly BlueprintGuid LichSpellbook = BlueprintGuid.Parse("08a80074263809c4b9616aac05af90ae");
+        public static readonly BlueprintGuid TricksterSpellbook = BlueprintGuid.Parse("2ff51e0531ed8e545ab4cb35c32d40f4");
+        public static readonly string[] MythicSpellbooks = new string[] { 
+            "Aeon",
+            "Angel",
+            "Azata",
+            "Demon",
+            "Lich",
+            "Trickster"
         };
         [System.Diagnostics.Conditional("DEBUG")]
         public static void Log(string msg) {
@@ -64,12 +69,6 @@ namespace MythicSpellbookTweaks {
             GUILayout.Label(Settings.disableArcaneFailure ? "Disabled" : "Enabled", GUILayout.ExpandWidth(false));
             GUILayout.EndHorizontal();
             GUILayout.BeginHorizontal();
-            if (GUILayout.Button("Casting DC Changes", GUILayout.ExpandWidth(false))) {
-                Settings.disableCastingChanges = !Settings.disableCastingChanges;
-            }
-            GUILayout.Label(Settings.disableCastingChanges ? "Disabled" : "Enabled", GUILayout.ExpandWidth(false));
-            GUILayout.EndHorizontal();
-            GUILayout.BeginHorizontal();
             GUILayout.Label(
                     string.Format("Casting Type: {0}", Settings.castingType.ToString()), GUILayout.ExpandWidth(false));
             if (GUILayout.Button("Fixed Stat", GUILayout.ExpandWidth(false))) {
@@ -88,7 +87,7 @@ namespace MythicSpellbookTweaks {
                 Settings.castingType = Settings.CastingType.MythicRank;
             }
             GUILayout.EndHorizontal();
-            foreach (var mythic in mythicSpellbooks.Keys) {
+            foreach (var mythic in MythicSpellbooks) {
                 GUILayout.Label(
                     string.Format("{0}: {1}",
                         mythic,
@@ -98,33 +97,21 @@ namespace MythicSpellbookTweaks {
                 GUILayout.BeginHorizontal();
                 if (GUILayout.Button("Strength", GUILayout.ExpandWidth(false))) {
                     Settings.SetMythicBookStat(mythic, StatType.Strength);
-                    var mythicSpellbook = ResourcesLibrary.TryGetBlueprint<BlueprintSpellbook>(mythicSpellbooks[mythic]);
-                    mythicSpellbook.CastingAttribute = Settings.GetMythicBookStat(mythic);
                 }
                 if (GUILayout.Button("Dexterity", GUILayout.ExpandWidth(false))) {
                     Settings.SetMythicBookStat(mythic, StatType.Dexterity);
-                    var mythicSpellbook = ResourcesLibrary.TryGetBlueprint<BlueprintSpellbook>(mythicSpellbooks[mythic]);
-                    mythicSpellbook.CastingAttribute = Settings.GetMythicBookStat(mythic);
                 }
                 if (GUILayout.Button("Constitution", GUILayout.ExpandWidth(false))) {
                     Settings.SetMythicBookStat(mythic, StatType.Constitution);
-                    var mythicSpellbook = ResourcesLibrary.TryGetBlueprint<BlueprintSpellbook>(mythicSpellbooks[mythic]);
-                    mythicSpellbook.CastingAttribute = Settings.GetMythicBookStat(mythic);
                 }
                 if (GUILayout.Button("Intelligence", GUILayout.ExpandWidth(false))) {
                     Settings.SetMythicBookStat(mythic, StatType.Intelligence);
-                    var mythicSpellbook = ResourcesLibrary.TryGetBlueprint<BlueprintSpellbook>(mythicSpellbooks[mythic]);
-                    mythicSpellbook.CastingAttribute = Settings.GetMythicBookStat(mythic);
                 }
                 if (GUILayout.Button("Wisdom", GUILayout.ExpandWidth(false))) {
                     Settings.SetMythicBookStat(mythic, StatType.Wisdom);
-                    var mythicSpellbook = ResourcesLibrary.TryGetBlueprint<BlueprintSpellbook>(mythicSpellbooks[mythic]);
-                    mythicSpellbook.CastingAttribute = Settings.GetMythicBookStat(mythic);
                 }
                 if (GUILayout.Button("Charisma", GUILayout.ExpandWidth(false))) {
                     Settings.SetMythicBookStat(mythic, StatType.Charisma);
-                    var mythicSpellbook = ResourcesLibrary.TryGetBlueprint<BlueprintSpellbook>(mythicSpellbooks[mythic]);
-                    mythicSpellbook.CastingAttribute = Settings.GetMythicBookStat(mythic);
                 }
                 GUILayout.EndHorizontal();
             }
@@ -135,79 +122,54 @@ namespace MythicSpellbookTweaks {
             Settings.Save(modEntry);
         }
 
-        [HarmonyPatch(typeof(BlueprintsCache), "Init")]
-        static class ResourcesLibrary_InitializeLibrary_Patch {
-            static bool Initialized;
-            static bool Prefix() {
-                if (Initialized) {
-                    return false;
-                } else {
-                    return true;
-                }
-            }
-            static void Postfix() {
-                if (Initialized) return;
-                Initialized = true;
-                Log("Patching MythicSpellBookTweaks");
-                patchMythicSpellbookAttributes();
-            }
-            static void patchMythicSpellbookAttributes() {
-                ResourcesLibrary.TryGetBlueprint<BlueprintSpellbook>(mythicSpellbooks["Aeon"]).CastingAttribute = Settings.GetMythicBookStat("Aeon");
-                ResourcesLibrary.TryGetBlueprint<BlueprintSpellbook>(mythicSpellbooks["Angel"]).CastingAttribute = Settings.GetMythicBookStat("Angel");
-                ResourcesLibrary.TryGetBlueprint<BlueprintSpellbook>(mythicSpellbooks["Azata"]).CastingAttribute = Settings.GetMythicBookStat("Azata");
-                ResourcesLibrary.TryGetBlueprint<BlueprintSpellbook>(mythicSpellbooks["Demon"]).CastingAttribute = Settings.GetMythicBookStat("Demon");
-                ResourcesLibrary.TryGetBlueprint<BlueprintSpellbook>(mythicSpellbooks["Lich"]).CastingAttribute = Settings.GetMythicBookStat("Lich");
-                ResourcesLibrary.TryGetBlueprint<BlueprintSpellbook>(mythicSpellbooks["Trickster"]).CastingAttribute = Settings.GetMythicBookStat("Trickster");
-            }
+        [HarmonyPatch(typeof(RuleCalculateAbilityParams), "OnTrigger", new Type[] { typeof(RulebookEventContext) })]
+        static class RuleCalculateAbilityParams_OnTrigger {
 
-            [HarmonyPatch(typeof(RuleCalculateAbilityParams), "OnTrigger", new Type[] { typeof(RulebookEventContext) })]
-            static class RuleCalculateAbilityParams_OnTrigger {
-
-                static void Postfix(RuleCalculateAbilityParams __instance) {
-                    if (Settings.disableCastingChanges) { return; }
-                    bool isMythic = false;
-                    Spellbook spellbook = __instance.Spellbook;
+            static void Postfix(RuleCalculateAbilityParams __instance) {
+                if (Settings.castingType == Settings.CastingType.MythicRank) { return; }
+                bool isMythic = false;
+                Spellbook spellbook = __instance.Spellbook;
 #if false
-                    if (spellbook == null) {
-                        Log(__instance.AbilityData.Name);
-                        var AbilityParams = __instance.AbilityData.Blueprint.ComponentsArray.OfType<ContextCalculateAbilityParams>().First();
-                        if (AbilityParams.StatTypeFromCustomProperty) {
-                            BlueprintCharacterClass characterClass = AbilityParams.m_CustomProperty.Get()
-                                    .ComponentsArray.OfType<CastingAttributeGetter>().First()
-                                    .m_Class;
-                            isMythic = characterClass.IsMythic;
-                            Log($"Class: {characterClass.Name}");
-                            Log($"isMythic: {isMythic}");
-                        }
-                    }
-#endif
-                    if (spellbook != null) {
-                        Log($"{__instance.AbilityData.Name}");
-                        isMythic = (spellbook != null) ? spellbook.IsMythic : false;
+                if (spellbook == null) {
+                    Log(__instance.AbilityData.Name);
+                    var AbilityParams = __instance.AbilityData.Blueprint.ComponentsArray.OfType<ContextCalculateAbilityParams>().First();
+                    if (AbilityParams.StatTypeFromCustomProperty) {
+                        BlueprintCharacterClass characterClass = AbilityParams.m_CustomProperty.Get()
+                                .ComponentsArray.OfType<CastingAttributeGetter>().First()
+                                .m_Class;
+                        isMythic = characterClass.IsMythic;
+                        Log($"Class: {characterClass.Name}");
                         Log($"isMythic: {isMythic}");
                     }
+                }
+#endif
+                if (spellbook != null) {
+                    Log($"{__instance.AbilityData.Name}");
+                    isMythic = (spellbook != null) ? spellbook.IsMythic : false;
+                    Log($"isMythic: {isMythic}");
+                }
 
-                    if (isMythic) {
-                        Log($"Using: {Settings.castingType}");
-                        switch (Settings.castingType) {
-                            case Settings.CastingType.HighestMental: {
-                                updateDC(__instance, getHighestStat(__instance, new StatType[] {
+                if (isMythic) {
+                    Log($"Using: {Settings.castingType}");
+                    switch (Settings.castingType) {
+                        case Settings.CastingType.HighestMental: {
+                            updateDC(__instance, getHighestStat(__instance, new StatType[] {
                                 StatType.Intelligence,
                                 StatType.Wisdom,
                                 StatType.Charisma
                             }));
-                                return;
-                            }
-                            case Settings.CastingType.HighestPhysical: {
-                                updateDC(__instance, getHighestStat(__instance, new StatType[] {
+                            return;
+                        }
+                        case Settings.CastingType.HighestPhysical: {
+                            updateDC(__instance, getHighestStat(__instance, new StatType[] {
                                 StatType.Strength,
                                 StatType.Dexterity,
                                 StatType.Constitution,
                             }));
-                                return;
-                            }
-                            case Settings.CastingType.HighestStat: {
-                                updateDC(__instance, getHighestStat(__instance, new StatType[] {
+                            return;
+                        }
+                        case Settings.CastingType.HighestStat: {
+                            updateDC(__instance, getHighestStat(__instance, new StatType[] {
                                 StatType.Strength,
                                 StatType.Dexterity,
                                 StatType.Constitution,
@@ -215,42 +177,69 @@ namespace MythicSpellbookTweaks {
                                 StatType.Wisdom,
                                 StatType.Charisma
                             }));
+                            return;
+                        }
+                        case Settings.CastingType.FixedStat: {
+                                var bookID = __instance.AbilityData.Spellbook.Blueprint.AssetGuid;
+                                if (bookID.Equals(AeonSpellbook)) {
+                                    updateDC(__instance, Settings.AeonStat);
+                                    return;
+                                }
+                                if (bookID.Equals(AngelSpellbook)) {
+                                    updateDC(__instance, Settings.AngelStat);
+                                    return;
+                                }
+                                if (bookID.Equals(AzataSpellbook)) {
+                                    updateDC(__instance, Settings.AzataStat);
+                                    return;
+                                }
+                                if (bookID.Equals(DemonSpellbook)) {
+                                    updateDC(__instance, Settings.DemonStat);
+                                    return;
+                                }
+                                if (bookID.Equals(LichSpellbook)) {
+                                    updateDC(__instance, Settings.LichStat);
+                                    return;
+                                }
+                                if (bookID.Equals(TricksterSpellbook)) {
+                                    updateDC(__instance, Settings.TricksterStat);
+                                    return;
+                                }
                                 return;
                             }
-                            case Settings.CastingType.MythicRank: {
-                                updateDC(__instance, __instance.Initiator.Progression.MythicExperience);
-                                return;
-                            }
-                            default: {
-                                return;
-                            }
+                        case Settings.CastingType.MythicRank: {
+                            updateDC(__instance, __instance.Initiator.Progression.MythicExperience);
+                            return;
+                        }
+                        default: {
+                            return;
                         }
                     }
                 }
-                static private void updateDC(RuleCalculateAbilityParams abilityParams, StatType newStat) {
-                    var newMod = abilityParams.Initiator.Stats.GetStat<ModifiableValueAttributeStat>(newStat).Bonus;
-                    updateDC(abilityParams, newMod);
-                }
-                static private void updateDC(RuleCalculateAbilityParams abilityParams, int newMod) {
-                    var oldMod = abilityParams.Initiator.Stats.GetStat<ModifiableValueAttributeStat>(abilityParams.Spellbook.Blueprint.CastingAttribute).Bonus;
-                    Log($"Starting DC: {abilityParams.Result.DC}");
-                    abilityParams.Result.DC -= oldMod;
-                    abilityParams.Result.DC += newMod;
-                    Log($"Ending DC: {abilityParams.Result.DC}");
-                }
-                static private StatType getHighestStat(RuleCalculateAbilityParams abilityParams, StatType[] stats) {
-                    StatType highestStat = StatType.Unknown;
-                    int highestValue = -1;
-                    foreach (StatType stat in stats) {
-                        var value = abilityParams.Initiator.Stats.GetStat(stat).ModifiedValue;
-                        if (value > highestValue) {
-                            highestStat = stat;
-                            highestValue = value;
-                        }
+            }
+            static private void updateDC(RuleCalculateAbilityParams abilityParams, StatType newStat) {
+                var newMod = abilityParams.Initiator.Stats.GetStat<ModifiableValueAttributeStat>(newStat).Bonus;
+                updateDC(abilityParams, newMod);
+            }
+            static private void updateDC(RuleCalculateAbilityParams abilityParams, int newMod) {
+                var oldMod = abilityParams.Initiator.Stats.GetStat<ModifiableValueAttributeStat>(abilityParams.Spellbook.Blueprint.CastingAttribute).Bonus;
+                Log($"Starting DC: {abilityParams.Result.DC}");
+                abilityParams.Result.DC -= abilityParams.Initiator.Progression.MythicLevel;
+                abilityParams.Result.DC += newMod;
+                Log($"Ending DC: {abilityParams.Result.DC}");
+            }
+            static private StatType getHighestStat(RuleCalculateAbilityParams abilityParams, StatType[] stats) {
+                StatType highestStat = StatType.Unknown;
+                int highestValue = -1;
+                foreach (StatType stat in stats) {
+                    var value = abilityParams.Initiator.Stats.GetStat(stat).ModifiedValue;
+                    if (value > highestValue) {
+                        highestStat = stat;
+                        highestValue = value;
                     }
-                    Log($"Highest Stat: {highestStat} - {abilityParams.Initiator.Stats.GetStat(highestStat).ModifiedValue}");
-                    return highestStat;
                 }
+                Log($"Highest Stat: {highestStat} - {abilityParams.Initiator.Stats.GetStat(highestStat).ModifiedValue}");
+                return highestStat;
             }
         }
         [HarmonyPatch(typeof(AbilityData), "IsAffectedByArcaneSpellFailure", MethodType.Getter)]
