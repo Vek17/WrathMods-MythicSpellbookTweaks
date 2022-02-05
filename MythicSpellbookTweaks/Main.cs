@@ -86,6 +86,10 @@ namespace MythicSpellbookTweaks {
             if (GUILayout.Button("Mythic Rank", GUILayout.ExpandWidth(false))) {
                 Settings.castingType = Settings.CastingType.MythicRank;
             }
+            if (GUILayout.Button("Dobule Mythic Rank", GUILayout.ExpandWidth(false)))
+            {
+                Settings.castingType = Settings.CastingType.DoubleMythicRank;
+            }
             GUILayout.EndHorizontal();
             foreach (var mythic in MythicSpellbooks) {
                 GUILayout.Label(
@@ -180,37 +184,42 @@ namespace MythicSpellbookTweaks {
                             return;
                         }
                         case Settings.CastingType.FixedStat: {
-                                var bookID = __instance.AbilityData.Spellbook.Blueprint.AssetGuid;
-                                if (bookID.Equals(AeonSpellbook)) {
-                                    updateDC(__instance, Settings.AeonStat);
-                                    return;
-                                }
-                                if (bookID.Equals(AngelSpellbook)) {
-                                    updateDC(__instance, Settings.AngelStat);
-                                    return;
-                                }
-                                if (bookID.Equals(AzataSpellbook)) {
-                                    updateDC(__instance, Settings.AzataStat);
-                                    return;
-                                }
-                                if (bookID.Equals(DemonSpellbook)) {
-                                    updateDC(__instance, Settings.DemonStat);
-                                    return;
-                                }
-                                if (bookID.Equals(LichSpellbook)) {
-                                    updateDC(__instance, Settings.LichStat);
-                                    return;
-                                }
-                                if (bookID.Equals(TricksterSpellbook)) {
-                                    updateDC(__instance, Settings.TricksterStat);
-                                    return;
-                                }
+                            var bookID = __instance.AbilityData.Spellbook.Blueprint.AssetGuid;
+                            if (bookID.Equals(AeonSpellbook)) {
+                                updateDC(__instance, Settings.AeonStat);
                                 return;
                             }
-                        case Settings.CastingType.MythicRank: {
-                            updateDC(__instance, __instance.Initiator.Progression.MythicExperience);
+                            if (bookID.Equals(AngelSpellbook)) {
+                                updateDC(__instance, Settings.AngelStat);
+                                return;
+                            }
+                            if (bookID.Equals(AzataSpellbook)) {
+                                updateDC(__instance, Settings.AzataStat);
+                                return;
+                            }
+                            if (bookID.Equals(DemonSpellbook)) {
+                                updateDC(__instance, Settings.DemonStat);
+                                return;
+                            }
+                            if (bookID.Equals(LichSpellbook)) {
+                                updateDC(__instance, Settings.LichStat);
+                                return;
+                            }
+                            if (bookID.Equals(TricksterSpellbook)) {
+                                updateDC(__instance, Settings.TricksterStat);
+                                return;
+                            }
                             return;
                         }
+                        case Settings.CastingType.MythicRank: {
+                            //updateDC(__instance, __instance.Initiator.Progression.MythicLevel);
+                            return;
+                        }
+                        case Settings.CastingType.DoubleMythicRank:
+                            {
+                                updateDC(__instance, __instance.Initiator.Progression.MythicLevel * 2);
+                                return;
+                            }
                         default: {
                             return;
                         }

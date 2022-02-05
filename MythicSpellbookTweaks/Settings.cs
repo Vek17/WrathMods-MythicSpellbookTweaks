@@ -67,7 +67,8 @@ namespace MythicSpellbookTweaks {
             HighestMental,
             HighestPhysical,
             HighestStat,
-            MythicRank
+            MythicRank,
+            DoubleMythicRank
         }
     }
 }
