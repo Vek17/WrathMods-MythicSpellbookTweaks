@@ -90,6 +90,10 @@ namespace MythicSpellbookTweaks {
             {
                 Settings.castingType = Settings.CastingType.DoubleMythicRank;
             }
+            if (GUILayout.Button("Mythic Rank Plus Highest Stat", GUILayout.ExpandWidth(false)))
+            {
+                Settings.castingType = Settings.CastingType.MythicRankPlusHighestStat;
+            }
             GUILayout.EndHorizontal();
             foreach (var mythic in MythicSpellbooks) {
                 GUILayout.Label(
@@ -218,6 +222,20 @@ namespace MythicSpellbookTweaks {
                         case Settings.CastingType.DoubleMythicRank:
                             {
                                 updateDC(__instance, __instance.Initiator.Progression.MythicLevel * 2);
+                                return;
+                            }
+                        case Settings.CastingType.MythicRankPlusHighestStat:
+                            {
+                                var highestStat = getHighestStat(__instance, new StatType[] {
+                                    StatType.Strength,
+                                    StatType.Dexterity,
+                                    StatType.Constitution,
+                                    StatType.Intelligence,
+                                    StatType.Wisdom,
+                                    StatType.Charisma
+                                });
+                                var bonus = __instance.Initiator.Progression.MythicLevel + __instance.Initiator.Stats.GetAttribute(highestStat).Bonus;
+                                updateDC(__instance, bonus);
                                 return;
                             }
                         default: {
