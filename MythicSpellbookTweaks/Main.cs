@@ -10,6 +10,8 @@ using Kingmaker.UnitLogic.Abilities;
 using Kingmaker.UnitLogic.Parts;
 using System;
 using System.Collections.Generic;
+using System.Linq;
+using System.Text.RegularExpressions;
 using UnityEngine;
 using UnityModManagerNet;
 using static UnityModManagerNet.UnityModManager;
@@ -90,6 +92,10 @@ namespace MythicSpellbookTweaks {
             {
                 Settings.castingType = Settings.CastingType.DoubleMythicRank;
             }
+            if (GUILayout.Button("Half Mythic Rank Plus Highest Stat", GUILayout.ExpandWidth(false)))
+            {
+                Settings.castingType = Settings.CastingType.HalfMythicRankPlusHighestStat;
+            }
             if (GUILayout.Button("Mythic Rank Plus Highest Stat", GUILayout.ExpandWidth(false)))
             {
                 Settings.castingType = Settings.CastingType.MythicRankPlusHighestStat;
@@ -99,7 +105,7 @@ namespace MythicSpellbookTweaks {
                 GUILayout.Label(
                     string.Format("{0}: {1}",
                         mythic,
-                        Settings.castingType == Settings.CastingType.FixedStat ? Settings.GetMythicBookStat(mythic).ToString() : Settings.castingType.ToString()),
+                        Settings.castingType == Settings.CastingType.FixedStat ? Settings.GetMythicBookStat(mythic).ToString() : String.Join(" ", Settings.castingType.ToString().SplitOnCapitals())),
                     GUILayout.ExpandWidth(false));
 
                 GUILayout.BeginHorizontal();
@@ -128,6 +134,14 @@ namespace MythicSpellbookTweaks {
 
         static void OnSaveGUI(UnityModManager.ModEntry modEntry) {
             Settings.Save(modEntry);
+        }
+
+        public static IEnumerable<string> SplitOnCapitals(this string text) {
+            Regex regex = new Regex(@"[\p{Lu}\d-/]+[^\p{Lu}\s\d]*");
+            foreach (Match match in regex.Matches(text))
+            {
+                yield return match.Value;
+            }
         }
 
         [HarmonyPatch(typeof(RuleCalculateAbilityParams), "OnTrigger", new Type[] { typeof(RulebookEventContext) })]
@@ -222,6 +236,20 @@ namespace MythicSpellbookTweaks {
                         case Settings.CastingType.DoubleMythicRank:
                             {
                                 updateDC(__instance, __instance.Initiator.Progression.MythicLevel * 2);
+                                return;
+                            }
+                        case Settings.CastingType.HalfMythicRankPlusHighestStat:
+                            {
+                                var highestStat = getHighestStat(__instance, new StatType[] {
+                                    StatType.Strength,
+                                    StatType.Dexterity,
+                                    StatType.Constitution,
+                                    StatType.Intelligence,
+                                    StatType.Wisdom,
+                                    StatType.Charisma
+                                });
+                                var bonus = (__instance.Initiator.Progression.MythicLevel / 2) + __instance.Initiator.Stats.GetAttribute(highestStat).Bonus;
+                                updateDC(__instance, bonus);
                                 return;
                             }
                         case Settings.CastingType.MythicRankPlusHighestStat:
